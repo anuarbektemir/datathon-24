@@ -38,10 +38,11 @@ networkx==3.4.1
 numpy==1.26.4
 opencv-contrib-python==4.10.0.84
 opencv-python==4.10.0.84
+opencv-python-headless==4.10.0.84
 opt-einsum==3.3.0
 packaging==24.1
 paddleocr==2.8.1
-paddlepaddle==2.5.2
+paddlepaddle==2.6.0
 pandas==2.2.3
 pillow==10.4.0
 protobuf==5.28.2
