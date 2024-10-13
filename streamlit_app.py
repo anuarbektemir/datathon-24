@@ -4,6 +4,8 @@ import re
 import cv2
 import numpy as np
 from PIL import Image
+import pandas as pd
+from io import BytesIO
 
 # Initialize PaddleOCR model
 ocr_model = PaddleOCR(use_angle_cls=True)  # Set 'en' for English
@@ -36,6 +38,9 @@ st.title("Multi-Image OCR with Gallery View and Area Calculation")
 
 # Upload multiple images
 uploaded_files = st.file_uploader("Choose images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+
+# Initialize a list to store data for export
+export_data = []
 
 if uploaded_files:
     # Define how many images to show per row (number of columns)
@@ -73,9 +78,16 @@ if uploaded_files:
             total_area, filtered_items = filter_and_calculate_total_area(text)
             
             # Display the OCR results below the image
-            st.write(f"Total Area: {total_area}")
-            st.write(f"Filtered Items: {filtered_items}")
+            st.write(f"Общая площадь: {total_area:.2f}")
+            st.write(f"Площади индивидуальных комнат: {filtered_items}")
             st.write("---")
+            
+            # Store the data for export
+            export_data.append({
+                "Image Name": uploaded_file.name,
+                "Total Area": total_area,
+                "Filtered Items": ', '.join(filtered_items)
+            })
         
         # Move to the next column
         current_col += 1
@@ -83,3 +95,28 @@ if uploaded_files:
         if current_col == num_columns:
             current_col = 0
             cols = st.columns(num_columns)  # Create a new set of columns for the next row
+
+    # Convert the collected data to a DataFrame
+    df_export = pd.DataFrame(export_data)
+
+    # Display the Export button
+    st.write("### Export Results to Excel")
+    if not df_export.empty:
+        # Function to convert DataFrame to Excel and return it as BytesIO object
+        def convert_df_to_excel(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False)
+            processed_data = output.getvalue()
+            return processed_data
+
+        # Call the function to get the excel data
+        excel_data = convert_df_to_excel(df_export)
+        
+        # Create a download button
+        st.download_button(
+            label="Скачать в Excel",
+            data=excel_data,
+            file_name="image_ocr_results.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
