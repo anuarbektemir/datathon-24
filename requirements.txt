@@ -59,7 +59,6 @@ networkx==3.4.1
 numpy==1.26.4
 omegaconf==2.3.0
 opencv-contrib-python==4.10.0.84
-opencv-python==4.10.0.84
 opencv-python-headless==4.10.0.84
 openpyxl==3.1.5
 opt-einsum==3.3.0
