@@ -32,29 +32,54 @@ def filter_and_calculate_total_area(items):
     return total_area, filtered_items
 
 # Streamlit app
-st.title("Image OCR and Area Calculation")
+st.title("Multi-Image OCR with Gallery View and Area Calculation")
 
-# Upload an image
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+# Upload multiple images
+uploaded_files = st.file_uploader("Choose images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
-if uploaded_file is not None:
-    # Open the uploaded image with PIL and convert it to a format suitable for OpenCV
-    image = Image.open(uploaded_file)
-    img_array = np.array(image)  # Convert image to numpy array
-    img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)  # Convert RGB to BGR format for OpenCV
+if uploaded_files:
+    # Define how many images to show per row (number of columns)
+    num_columns = 3
+
+    # Initialize index
+    current_col = 0
+    cols = st.columns(num_columns)  # Create the columns initially
     
-    # Display the uploaded image
-    st.image(image, caption="Uploaded Image", use_column_width=True)
-    
-    # Perform OCR on the uploaded image
-    ocr_results = ocr_model.ocr(img_bgr)
-    
-    # Extract text
-    text = [word_info[1][0] for line in ocr_results for word_info in line]
-    
-    # Calculate the total area
-    total_area, filtered_items = filter_and_calculate_total_area(text)
-    
-    # Display the results
-    st.write(f"Total Area: {total_area}")
-    st.write(f"Filtered Items: {filtered_items}")
+    for uploaded_file in uploaded_files:
+        # Open the uploaded image with PIL and convert it to a format suitable for OpenCV
+        image = Image.open(uploaded_file)
+        
+        # Convert the image to RGB if it's not in that mode (OCR requires RGB input)
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+
+        # Convert to OpenCV format (numpy array)
+        img_array = np.array(image)
+
+        # Convert the RGB numpy array to BGR format for OpenCV
+        img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+        
+        # Display the image in the appropriate column
+        with cols[current_col]:
+            st.image(image, caption=f"Image: {uploaded_file.name}", use_column_width=True)
+            
+            # Perform OCR on the uploaded image
+            ocr_results = ocr_model.ocr(img_bgr)
+            
+            # Extract text
+            text = [word_info[1][0] for line in ocr_results for word_info in line]
+            
+            # Calculate the total area
+            total_area, filtered_items = filter_and_calculate_total_area(text)
+            
+            # Display the OCR results below the image
+            st.write(f"Total Area: {total_area}")
+            st.write(f"Filtered Items: {filtered_items}")
+            st.write("---")
+        
+        # Move to the next column
+        current_col += 1
+        # If the current column exceeds the number of columns, reset to the first column
+        if current_col == num_columns:
+            current_col = 0
+            cols = st.columns(num_columns)  # Create a new set of columns for the next row
