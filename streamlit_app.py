@@ -14,6 +14,7 @@ ocr_model = PaddleOCR(use_angle_cls=True)  # Set 'en' for English
 number_pattern = re.compile(r'[-+]?[0-9]*\.?[0-9]+(?:,[0-9]+)?')
 
 # Optimized filter and calculate total area function
+# Optimized filter and calculate total area function
 def filter_and_calculate_total_area(items):
     filtered_items = []
     
@@ -24,20 +25,22 @@ def filter_and_calculate_total_area(items):
         # Extract value inside parentheses if present
         item = re.sub(r'.*\(([^)]+)\).*', r'\1', item)
         
-        # Check if the item contains a valid number and filter
-        if '.' in item:
+        # Check if the item contains a valid number using regex
+        match = number_pattern.fullmatch(item.strip())
+        if match:
             filtered_items.append(item)
     
-    # Calculate the total area
-    total_area = sum(map(float, filtered_items))
+    # Calculate the total area, ensure no invalid items
+    total_area = sum(map(float, filtered_items)) if filtered_items else 0.0
     
     return total_area, filtered_items
 
+
 # Streamlit app
-st.title("Multi-Image OCR with Gallery View and Area Calculation")
+st.title("Разметка-классификация планировок")
 
 # Upload multiple images
-uploaded_files = st.file_uploader("Choose images...", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+uploaded_files = st.file_uploader("Выберите изображения", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
 
 # Initialize a list to store data for export
 export_data = []
@@ -66,7 +69,7 @@ if uploaded_files:
         
         # Display the image in the appropriate column
         with cols[current_col]:
-            st.image(image, caption=f"Image: {uploaded_file.name}", use_column_width=True)
+            st.image(image, caption=f"Изображение: {uploaded_file.name}", use_column_width=True)
             
             # Perform OCR on the uploaded image
             ocr_results = ocr_model.ocr(img_bgr)
@@ -100,7 +103,7 @@ if uploaded_files:
     df_export = pd.DataFrame(export_data)
 
     # Display the Export button
-    st.write("### Export Results to Excel")
+    st.write("### Скачать результаты в Excel")
     if not df_export.empty:
         # Function to convert DataFrame to Excel and return it as BytesIO object
         def convert_df_to_excel(df):
