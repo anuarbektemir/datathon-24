@@ -1,7 +1,7 @@
 import streamlit as st
 from paddleocr import PaddleOCR
 import re
-import cv2
+#import cv2
 import numpy as np
 from PIL import Image
 import pandas as pd
@@ -65,14 +65,14 @@ if uploaded_files:
         img_array = np.array(image)
 
         # Convert the RGB numpy array to BGR format for OpenCV
-        img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+        #img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
         
         # Display the image in the appropriate column
         with cols[current_col]:
             st.image(image, caption=f"Изображение: {uploaded_file.name}", use_column_width=True)
             
             # Perform OCR on the uploaded image
-            ocr_results = ocr_model.ocr(img_bgr)
+            ocr_results = ocr_model.ocr(img_array)
             
             # Extract text
             text = [word_info[1][0] for line in ocr_results for word_info in line]
